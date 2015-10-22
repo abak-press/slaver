@@ -94,7 +94,7 @@ module Slaver
       end
 
       def pools
-        self == ::ActiveRecord::Base ? @pools ||= {} : ::ActiveRecord::Base.pools
+        ((self == ::ActiveRecord::Base) && (@pools ||= {})) || ::ActiveRecord::Base.pools
       end
 
       def current_config
