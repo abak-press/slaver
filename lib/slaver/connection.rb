@@ -98,7 +98,7 @@ module Slaver
       end
 
       def current_config
-        @current_config || ( (self != ::ActiveRecord::Base) && ::ActiveRecord::Base.current_config)
+        @current_config || ((self != ::ActiveRecord::Base) && ::ActiveRecord::Base.current_config)
       end
 
       def within_block?
