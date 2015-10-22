@@ -6,7 +6,7 @@ describe Slaver do
       it 'creates record in other db' do
         Foo.on(:other).create(name: 'test')
 
-        expect(Foo.count).to eq 0
+        expect(Foo.first).not_to be
 
         expect(Foo.on(:test_other).count).to eq 1
       end
@@ -107,8 +107,13 @@ describe Slaver do
 
       context 'on ActiveRecord::Base' do
         it 'change connections for every descedant' do
-          Foo.on(:other).create
-          Bar.on(:other).create
+          ActiveRecord::Base.within(:other) do
+            Foo.create
+            Bar.create
+          end
+
+          expect(Foo.first).not_to be
+          expect(Bar.first).not_to be
 
           ActiveRecord::Base.within(:other) do
             expect(Foo.first).to be

@@ -4,10 +4,6 @@ module Slaver
 
     included do
       include ProxyMethods
-
-      class << self
-        attr_reader :current_config
-      end
     end
 
     module ClassMethods
@@ -36,13 +32,13 @@ module Slaver
       #
       # Returns self
       def on(config_name)
-        @saved_config ||= get_config
+        @saved_config ||= @current_config
         @saved_block ||= @block
         @block = false
 
         @current_config = prepare(config_name)
 
-        initialize_pool(get_config) unless pools[get_config]
+        initialize_pool(@current_config) unless pools[@current_config]
 
         self
       end
@@ -98,21 +94,29 @@ module Slaver
       end
 
       def pools
-        @pools ||= {}
+        ::ActiveRecord::Base.get_pools
+      end
+
+      def current_config
+        get_current_config || ::ActiveRecord::Base.get_current_config
       end
 
       def within_block?
         !!@block
       end
 
-      def get_config
-        current_config || ::ActiveRecord::Base.current_config
+      def get_pools
+        @pools ||= {}
+      end
+
+      def get_current_config
+        @current_config
       end
 
       private
 
       def with_config(config_name)
-        last_config = get_config
+        last_config = @current_config
         @current_config = config_name
 
         begin
