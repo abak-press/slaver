@@ -106,7 +106,7 @@ describe Slaver do
       end
 
       context 'on ActiveRecord::Base' do
-        it 'change connections for every desedant' do
+        it 'change connections for every descedant' do
           Foo.on(:other).create
           Bar.on(:other).create
 
