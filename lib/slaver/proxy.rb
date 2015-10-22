@@ -3,7 +3,7 @@ module Slaver
     attr_accessor :klass
     attr_reader :connection_pool
 
-    def get_connection(klass, config)
+    def init_connection(klass, config)
       @klass = klass
       @connection_pool = klass.pools[config]
 
