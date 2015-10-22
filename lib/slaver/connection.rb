@@ -4,10 +4,13 @@ module Slaver
 
     included do
       include ProxyMethods
+
+      class << self
+        attr_reader :current_config
+      end
     end
 
     module ClassMethods
-      # TODO: Make it work with associations
       # Public: Change database connection for next query
       # WARNING: It'll change current DB connection until
       # insert, select or execute methods call
@@ -33,13 +36,13 @@ module Slaver
       #
       # Returns self
       def on(config_name)
-        @saved_config ||= @current_config
+        @saved_config ||= get_config
         @saved_block ||= @block
         @block = false
 
         @current_config = prepare(config_name)
 
-        initialize_pool(@current_config) unless pools[@current_config]
+        initialize_pool(get_config) unless pools[get_config]
 
         self
       end
@@ -102,10 +105,14 @@ module Slaver
         !!@block
       end
 
+      def get_config
+        current_config || ::ActiveRecord::Base.current_config
+      end
+
       private
 
       def with_config(config_name)
-        last_config = @current_config
+        last_config = get_config
         @current_config = config_name
 
         begin
