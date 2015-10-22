@@ -94,23 +94,15 @@ module Slaver
       end
 
       def pools
-        ::ActiveRecord::Base.get_pools
+        self == ::ActiveRecord::Base ? @pools ||= {} : ::ActiveRecord::Base.pools
       end
 
       def current_config
-        get_current_config || ::ActiveRecord::Base.get_current_config
+        @current_config || ( (self != ::ActiveRecord::Base) && ::ActiveRecord::Base.current_config)
       end
 
       def within_block?
         !!@block
-      end
-
-      def get_pools
-        @pools ||= {}
-      end
-
-      def get_current_config
-        @current_config
       end
 
       private
