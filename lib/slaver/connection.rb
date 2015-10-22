@@ -7,7 +7,6 @@ module Slaver
     end
 
     module ClassMethods
-      # TODO: Make it work with associations
       # Public: Change database connection for next query
       # WARNING: It'll change current DB connection until
       # insert, select or execute methods call
@@ -95,7 +94,11 @@ module Slaver
       end
 
       def pools
-        @pools ||= {}
+        ((self == ::ActiveRecord::Base) && (@pools ||= {})) || ::ActiveRecord::Base.pools
+      end
+
+      def current_config
+        @current_config || ((self != ::ActiveRecord::Base) && ::ActiveRecord::Base.current_config)
       end
 
       def within_block?

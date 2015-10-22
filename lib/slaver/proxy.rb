@@ -1,12 +1,11 @@
 module Slaver
   class Proxy
-    attr_accessor :klass, :config
+    attr_accessor :klass
     attr_reader :connection_pool
 
-    def get_connection(klass, config)
+    def init(klass, config)
       @klass = klass
       @connection_pool = klass.pools[config]
-      @config = config
 
       self
     end

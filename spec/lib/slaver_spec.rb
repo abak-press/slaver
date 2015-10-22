@@ -105,6 +105,33 @@ describe Slaver do
         expect(Foo.on(:other).find_by_name('test2')).to be
       end
 
+      context 'on ActiveRecord::Base' do
+        it 'change connections for every descedant' do
+          ActiveRecord::Base.within(:other) do
+            Foo.create
+            Bar.create
+          end
+
+          expect(Foo.first).not_to be
+          expect(Bar.first).not_to be
+
+          ActiveRecord::Base.within(:other) do
+            expect(Foo.first).to be
+            expect(Bar.first).to be
+          end
+        end
+
+        it 'can be combined with on method' do
+          Foo.on(:other).create
+          Bar.create
+
+          ActiveRecord::Base.within(:other) do
+            expect(Foo.first).to be
+            expect(Bar.on(:test).first).to be
+          end
+        end
+      end
+
       context 'with "on" method' do
         it 'works properly with simple usage' do
           Foo.within(:other) do
