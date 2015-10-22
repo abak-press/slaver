@@ -121,7 +121,7 @@ describe Slaver do
           end
         end
 
-        it 'can be combine with on method' do
+        it 'can be combined with on method' do
           Foo.on(:other).create
           Bar.create
 
