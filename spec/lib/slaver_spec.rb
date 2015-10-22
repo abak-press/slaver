@@ -11,11 +11,21 @@ describe Slaver do
         expect(Foo.on(:test_other).count).to eq 1
       end
 
+      it "doesn't polute other scope connection" do
+        Foo.on(:other).create(name: 'test_other')
+        Foo.create(name: 'test')
+        scope_one = Foo.on(:other).where(name: 'test_other')
+        scope_two = Foo.where(name: 'test')
+
+        expect(scope_two.first).to be
+        expect(scope_one.first).to be
+      end
+
       context 'with method chain' do
         it 'works with where' do
           Foo.on(:other).create(name: 'test')
 
-          expect(Foo.where(name: 'test').on(:other).first).to be
+          expect(Foo.where(name: 'test').on(:other).first.name).to eq 'test'
           expect(Foo.where(name: 'test').first).not_to be
         end
 
@@ -24,6 +34,15 @@ describe Slaver do
           Bar.on(:other).create(foo: foo)
 
           expect(Bar.on(:other).joins(:foo).where(foos: {name: 'test'}).first).to be
+        end
+
+        it 'works with methods with block' do
+          Foo.on(:other).create do |foo|
+            foo.name = 'test'
+          end
+
+          expect(Foo.where(name: 'test').on(:other).first.name).to eq 'test'
+          expect(Foo.where(name: 'test').first).not_to be
         end
 
         it 'works with raw queries' do
@@ -39,13 +58,25 @@ describe Slaver do
         end
       end
 
-      it 'allow using one connection for miltiple querries' do
-        Foo.on(:other).create(name: 'test')
+      context 'raw queries' do
+        it 'allow using one connection for miltiple querries' do
+          Foo.on(:other).create(name: 'test')
 
-        connection = ActiveRecord::Base.on(:other).connection
+          connection = ActiveRecord::Base.on(:other).connection
 
-        expect(connection.select_all('SELECT * FROM foos').first).to be
-        expect(connection.select_all('SELECT * FROM foos').first).to be
+          expect(connection.select_all('SELECT * FROM foos').first).to be
+          expect(connection.select_all('SELECT * FROM foos').first).to be
+        end
+
+        it 'allows use of multiple connections simultaneously' do
+          Foo.on(:other).create
+
+          test_con = ActiveRecord::Base.connection
+          other_con = ActiveRecord::Base.on(:other).connection
+
+          expect(other_con.select_all('SELECT * FROM foos').first).to be
+          expect(test_con.select_all('SELECT * FROM foos').first).not_to be
+        end
       end
 
       it 'can be chained multiple times' do
@@ -86,13 +117,13 @@ describe Slaver do
         end
       end
 
-      it 'yeilds only for one model' do
+      it 'yeilds independent of model' do
         Foo.within(:other) do
           Bar.create
         end
 
-        expect(Bar.on(:other).count).to eq 0
-        expect(Bar.count).to eq 1
+        expect(Bar.on(:other).count).to eq 1
+        expect(Bar.count).to eq 0
       end
 
       it 'works with multiple queries' do
@@ -105,15 +136,54 @@ describe Slaver do
         expect(Foo.on(:other).find_by_name('test2')).to be
       end
 
+      context 'on ActiveRecord::Base' do
+        it 'change connections for every descedant' do
+          ActiveRecord::Base.within(:other) do
+            Foo.create
+            Bar.create
+          end
+
+          expect(Foo.first).not_to be
+          expect(Bar.first).not_to be
+
+          ActiveRecord::Base.within(:other) do
+            expect(Foo.first).to be
+            expect(Bar.first).to be
+          end
+        end
+
+        it 'can be combined with on method' do
+          Foo.on(:other).create
+          Bar.create
+
+          ActiveRecord::Base.within(:other) do
+            expect(Foo.first).to be
+            expect(Bar.on(:test).first).to be
+          end
+        end
+      end
+
       context 'with "on" method' do
         it 'works properly with simple usage' do
           Foo.within(:other) do
             Foo.create(name: 'test')
             Foo.on(:test).create(name: 'test2')
-            expect(Foo.find_by_name('test')).to be
+            expect(Foo.find_by_name('test').name).to be
           end
 
-          expect(Foo.find_by_name('test2')).to be
+          expect(Foo.find_by_name('test2').name).to be
+        end
+
+        it 'works properly with scopes mixin' do
+          Foo.on(:other).create(name: 'other')
+          Foo.create(name: 'test')
+
+          Foo.within(:other) do
+            scope_f = Foo.on(:test).where(name: 'test')
+            scope_s = Foo.where(name: 'other')
+            expect(scope_f.first.name).to eq 'test'
+            expect(scope_s.first.name).to eq 'other'
+          end
         end
 
         it 'works with combination of on' do
