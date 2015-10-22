@@ -8,6 +8,7 @@ require 'slaver/proxy'
 require 'slaver/proxy_methods'
 require 'slaver/connection'
 require 'slaver/railtie'
+require 'slavable'
 
 module Slaver
 end
