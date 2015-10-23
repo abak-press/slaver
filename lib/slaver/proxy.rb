@@ -1,12 +1,12 @@
 module Slaver
   class Proxy
-    attr_accessor :klass, :config
-    attr_reader :connection_pool
+    include Singleton
 
-    def get_connection(klass, config)
+    attr_reader :connection_pool, :klass
+
+    def for_config(klass, config_name)
       @klass = klass
-      @connection_pool = klass.pools[config]
-      @config = config
+      @connection_pool = klass.pools[config_name]
 
       self
     end
@@ -32,14 +32,7 @@ module Slaver
     end
 
     def method_missing(method, *args, &block)
-      klass.clear_config if should_clean?(method)
       safe_connection.send(method, *args, &block)
-    end
-
-    private
-
-    def should_clean?(method)
-      method.to_s =~ /insert|select|execute/ && !klass.within_block?
     end
   end
 end
