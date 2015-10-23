@@ -71,20 +71,20 @@ Only works with class/scope methods. Connection changed until query is perfomed.
 Connection will be switched only for required class.
 
 ```ruby
+  # simple usage
   SomeModel.within(:slave) do
     SomeModel.where(name: 'me')
   end
 
   # It also can be combined with "on" method
-
   SomeModel.within(:mysql) do
     me = SomeModel.find_by_name('me')
     SomeModel.on(:slave).find_by_name('me').update_attributes(me.attributes)
   end
 
-  # ACTUNG!!
-  Somemodel.within(:slave) do
-    #!!! Will be executed on default connection for OtherModel
+  # it can execute multi-models queries on other connection
+  ActiveRecord::Base.within(:slave) do
+    SomeModel.where(name: 'me').first
     OtherModel.where(name: 'me').first
   end
 ```
