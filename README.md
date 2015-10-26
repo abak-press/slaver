@@ -88,6 +88,48 @@ Connection will be switched only for required class.
     OtherModel.where(name: 'me').first
   end
 ```
+
+### Execute whole method on any class on other connection
+```ruby
+class Some
+  extend Slavable
+
+  def some_method
+    Foo.create
+    f = Foo.where(...).first
+    other = SomeModel.where(...).first
+    f.update_attributes(...)
+    other.update_attributes(...)
+    ...
+  end
+
+  def self.class_method
+    b = Bar.create
+    b.update_attributes(...)
+    Foo.where(bar: b)
+    ....
+  end
+
+  switch :some_method, to: :other
+
+  # it also can be called on multiple methods and works with class_methods
+
+  switch :some_method, ..., to: :other
+
+  # for switching class method just use singleton class pattern:
+  class << self
+    extend Slavable
+
+    switch :class_method, ..., to: :other
+  end
+  ....
+end
+
+# it''ll be executed with :other connection
+Some.class_method
+Some.new.some_method
+```
+
 ### ACTUNG!!!!
 
 If you connection does not exists, behavior may change dependent of you current Rails environment:
