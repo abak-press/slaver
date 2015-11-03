@@ -15,7 +15,12 @@ class Some
     Foo.create(name: name)
   end
 
+  def method_with_block
+    yield 'some'
+  end
+
   switch :some_method, :method_wtih_args, to: :other
+  switch :method_with_block, to: :other
 
   class << self
     extend Slavable
@@ -24,23 +29,31 @@ class Some
   end
 end
 
-describe Slaver do
-  it 'switches some_method to other connection' do
-    s = Some.new
+describe 'swtich' do
+  context 'on instance methods' do
+    let(:exapmle) { Some.new }
+    it 'switches some_method to other connection' do
+      exapmle.some_method
 
-    s.some_method
+      expect(Bar.count).to eq 0
+      expect(Bar.on(:other).count).to eq 1
+    end
 
-    expect(Bar.count).to eq 0
-    expect(Bar.on(:other).count).to eq 1
-  end
+    it 'switches method_with_args to other connection' do
+      exapmle.method_wtih_args('test')
 
-  it 'switches method_with_args to other connection' do
-    s = Some.new
+      expect(Foo.where(name: 'test').count).to eq 0
+      expect(Foo.on(:other).where(name: 'test').count).to eq 1
+    end
 
-    s.method_wtih_args('test')
+    it 'switches method with block' do
+      exapmle.method_with_block do |name|
+         Foo.create(name: name)
+      end
 
-    expect(Foo.where(name: 'test').count).to eq 0
-    expect(Foo.on(:other).where(name: 'test').count).to eq 1
+      expect(Foo.count).to eq 0
+      expect(Foo.on(:other).where(name: 'some').count).to eq 1
+    end
   end
 
   it 'switches class_method to other connection' do

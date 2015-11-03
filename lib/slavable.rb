@@ -14,8 +14,8 @@ module Slavable
 
       class_eval <<-eoruby, __FILE__, __LINE__ + 1
 
-        def #{with_name}(*args)
-          ::ActiveRecord::Base.within(:#{connection}) { #{without_name}(*args) }
+        def #{with_name}(*args, &block)
+          ::ActiveRecord::Base.within(:#{connection}) { #{without_name}(*args, &block) }
         end
       eoruby
 
