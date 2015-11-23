@@ -13,9 +13,8 @@ module Slavable
       connection = options.with_indifferent_access.fetch(:to)
 
       class_eval <<-eoruby, __FILE__, __LINE__ + 1
-
         def #{with_name}(*args, &block)
-          ::ActiveRecord::Base.within(:#{connection}) { #{without_name}(*args, &block) }
+          ::ActiveRecord::Base.within(:#{connection}) { send(:#{without_name}, *args, &block) }
         end
       eoruby
 
