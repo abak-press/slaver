@@ -68,7 +68,7 @@ Only works with class/scope methods. Connection changed until query is perfomed.
 
 ### Execute block on other connection
 
-Connection will be switched only for required class.
+Connection will be switched for any query in block.
 
 ```ruby
   # simple usage
@@ -130,7 +130,7 @@ Some.class_method
 Some.new.some_method
 ```
 
-### ACTUNG!!!!
+### ACHTUNG!!!!
 
 If you connection does not exists, behavior may change dependent of you current Rails environment:
  - `Rails.env == production`: It'll raise `ArgumentError`
