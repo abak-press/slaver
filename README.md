@@ -130,6 +130,21 @@ Some.class_method
 Some.new.some_method
 ```
 
+### Switch all ActiveRecord::Base method to slave for specific class
+Allows you to make connection to database permanent. After that change `on` or `within` won't change database connection on execution.
+```
+class SomeModel < ActiveRecord::Base
+  # behaves exacly as AR - establish_connection
+  slaver_establish_conenction :test_other
+end
+
+# except one little thing:
+SomeModel.within(:test) do
+  SomeModel.create # It'll execute on :test_other connection, because it'll ignore slaver dynamic connection change
+end
+
+```
+
 ### ACHTUNG!!!!
 
 If you connection does not exists, behavior may change dependent of you current Rails environment:

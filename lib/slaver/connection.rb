@@ -73,6 +73,24 @@ module Slaver
         config_handler.run_with(self, config_name, pools_handler) { yield }
       end
 
+      # Public: Permanent change of connection for AR model
+      #
+      # config_name - String or Symbol, name of config_section
+      #
+      # Examples
+      #
+      #   SomeModel.switch_class :other
+      #
+      #   SomeModel.on(:test).connection - will return connection to other!!
+      #
+      #   SomeModel.switch_class :other, true
+      #
+      # Returns ConnectionPool
+      def slaver_establish_connection(config_name)
+        @ignore_slaver = true
+        establish_connection config_name
+      end
+
       private
 
       def config_handler

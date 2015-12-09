@@ -14,7 +14,7 @@ module Slaver
 
     module ClassMethods
       def connection_pool_with_proxy
-        if current_config
+        if use_proxy?
           connection_proxy.connection_pool
         else
           connection_pool_without_proxy
@@ -22,7 +22,7 @@ module Slaver
       end
 
       def connection_with_proxy
-        if current_config
+        if use_proxy?
           connection_proxy
         else
           (connection_pool && connection_pool.connection)
@@ -30,7 +30,7 @@ module Slaver
       end
 
       def clear_active_connections_with_proxy!
-        if current_config
+        if use_proxy?
           connection_proxy.clear_active_connections!
         else
           clear_active_connections_without_proxy!
@@ -38,7 +38,7 @@ module Slaver
       end
 
       def clear_all_connections_with_proxy!
-        if current_config
+        if use_proxy?
           connection_proxy.clear_all_connections!
         else
           clear_all_connections_without_proxy!
@@ -46,11 +46,15 @@ module Slaver
       end
 
       def connected_with_proxy?
-        if current_config
+        if use_proxy?
           connection_proxy.connected?
         else
           connected_without_proxy?
         end
+      end
+
+      def use_proxy?
+        !@ignore_slaver && current_config
       end
 
       def connection_proxy
