@@ -286,4 +286,26 @@ describe Slaver do
       end
     end
   end
+
+  describe '#slaver_establish_connection' do
+    let(:result) { ActiveRecord::Base.on(:other).connection.execute('select * from foos;') }
+
+    it 'switches class to other connection' do
+      Foo.slaver_establish_connection(:test_other)
+
+      Foo.create
+
+      expect(result).not_to be_empty
+    end
+
+    it "does not use slaver if it wasn't required" do
+      Foo.slaver_establish_connection(:test_other)
+
+      ActiveRecord::Base.within(:test) do
+        Foo.create
+      end
+
+      expect(result).not_to be_empty
+    end
+  end
 end
