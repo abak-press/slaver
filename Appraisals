@@ -1,6 +1,6 @@
 appraise 'rails3.1' do
   gem 'rails', '~> 3.1.0'
-end
+end if RUBY_VERSION < '2'
 
 appraise 'rails3.2' do
   gem 'rails', '~> 3.2.0'

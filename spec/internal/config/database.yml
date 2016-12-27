@@ -1,0 +1,6 @@
+test:
+  adapter: sqlite3
+  database: test
+test_other:
+  adapter: sqlite3
+  database: test_other
