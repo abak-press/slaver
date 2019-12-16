@@ -34,5 +34,9 @@ module Slaver
     def method_missing(method, *args, &block)
       safe_connection.send(method, *args, &block)
     end
+
+    def respond_to_missing?(method, include_private = false)
+      safe_connection.respond_to?(method, include_private) || super
+    end
   end
 end
