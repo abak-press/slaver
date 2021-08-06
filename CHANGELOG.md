@@ -1,6 +1,10 @@
+# v0.2.3
+
+* 2021-08-05 [aff2000](../../commit/aff2000) - __(TamarinEA)__ Release 0.2.3 
+* 2021-08-05 [e6b74b6](../../commit/e6b74b6) - __(TamarinEA)__ chore: add ruby 2.4 support 
+
 # v0.2.2
 
-* 2019-12-16 [6f4f370](../../commit/6f4f370) - __(ZhidkovDenis)__ Release 0.2.2 
 * 2019-12-16 [d25637b](../../commit/d25637b) - __(ZhidkovDenis)__ fix: separate test and release sections in drone config 
 * 2019-12-02 [94932dc](../../commit/94932dc) - __(ZhidkovDenis)__ Release 0.2.1 
 * 2019-12-02 [e842c9f](../../commit/e842c9f) - __(ZhidkovDenis)__ fix: add missed definition for Slaver::Proxy#respond_to_missing? 
