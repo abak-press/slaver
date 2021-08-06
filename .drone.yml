@@ -1,38 +1,73 @@
-matrix:
-  include:
-    - DOCKER_RUBY_VERSION: 2.2
-      RUBY_IMAGE_TAG: 2.2-latest
+name: build
 
-    - DOCKER_RUBY_VERSION: 2.3
-      RUBY_IMAGE_TAG: 2.3-latest
+kind: pipeline
+type: docker
 
-build:
-  test:
-    image: abakpress/dind-testing
-    privileged: true
-    volumes:
-      - /home/data/drone/images:/images
-      - /home/data/drone/gems:/bundle
+volumes:
+  - name: rubygems
+    host:
+      path: /home/data/drone/rubygems
+  - name: images
+    host:
+      path: /home/data/drone/images
+  - name: bundle
+    host:
+      path: /home/data/drone/gems
+  - name: rubygems
+    host:
+      path: /home/data/drone/rubygems
+
+spec_step_common: &spec_step_common
+  image: abakpress/dind-testing:1.0.3
+  pull: if-not-exists
+  privileged: true
+  volumes:
+    - name: images
+      path: /images
+    - name: bundle
+      path: /bundle
+  commands:
+    - prepare-build
+
+    - fetch-images
+      --image abakpress/ruby-app:$RUBY_IMAGE_TAG
+    - dip provision
+    - dip rspec
+
+steps:
+  - name: Tests Ruby 2.2
     environment:
-      - COMPOSE_FILE_EXT=drone
-      - RAILS_ENV=test
-      - RUBY_IMAGE_TAG=2.2-latest
-    commands:
-      - wrapdocker docker -v
+      COMPOSE_FILE_EXT: drone
+      DOCKER_RUBY_VERSION: 2.2
+      RUBY_IMAGE_TAG: 2.2-latest
+      RAILS_ENV: test
+    <<: *spec_step_common
 
-      - fetch-images
-        --image abakpress/ruby-app:$RUBY_IMAGE_TAG
+  - name: Tests Ruby 2.3
+    environment:
+      COMPOSE_FILE_EXT: drone
+      DOCKER_RUBY_VERSION: 2.3
+      RUBY_IMAGE_TAG: 2.3-latest
+      RAILS_ENV: test
+    <<: *spec_step_common
 
-      - dip provision
-      - dip rspec
+  - name: Tests Ruby 2.4
+    environment:
+      COMPOSE_FILE_EXT: drone
+      DOCKER_RUBY_VERSION: 2.4
+      RUBY_IMAGE_TAG: 2.4-latest
+      RAILS_ENV: test
+    <<: *spec_step_common
 
-  release:
-    image: abakpress/gem-publication
-    pull: true
+  - name: release
+    image: abakpress/gem-publication:latest
+    pull: if-not-exists
     when:
       event: push
       branch: master
+      status: success
     volumes:
-      - /home/data/drone/rubygems:/root/.gem
+      - name: rubygems
+        path: /root/.gem
     commands:
       - release-gem --public
