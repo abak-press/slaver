@@ -27,11 +27,8 @@ module Slaver
     def create_connection_pool(config_name)
       config = ::ActiveRecord::Base.configurations[config_name]
       config.symbolize_keys!
-      if ActiveRecord::VERSION::MAJOR < 4
-        spec = ActiveRecord::Base::ConnectionSpecification.new(config, "#{config[:adapter]}_connection")
-      else
-        spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(config, "#{config[:adapter]}_connection")
-      end
+      spec =
+        ActiveRecord::ConnectionAdapters::ConnectionSpecification.new(config, "#{config[:adapter]}_connection")
 
       ActiveRecord::ConnectionAdapters::ConnectionPool.new(spec)
     end
