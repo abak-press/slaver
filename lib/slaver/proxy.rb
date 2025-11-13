@@ -25,10 +25,21 @@ module Slaver
 
     def safe_connection
       connection_pool.automatic_reconnect = true
-      if !connection_pool.connected? && klass.connection_without_proxy.query_cache_enabled
-        connection_pool.connection.enable_query_cache!
+
+      mirror_query_cache_state(connection_pool.connection)
+    end
+
+    def mirror_query_cache_state(connection)
+      master = klass.connection_without_proxy
+
+      if master.query_cache_enabled
+        connection.enable_query_cache!
+      else
+        connection.clear_query_cache
+        connection.disable_query_cache!
       end
-      connection_pool.connection
+
+      connection
     end
 
     def method_missing(method, *args, &block)
